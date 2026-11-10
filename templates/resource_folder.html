@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ folder_name }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('resources_page') }}">STUDY PDFS</a> <span>/</span> {{ folder_name|upper }}{% endblock %}
+{% block content %}
+<div class="page-heading reveal"><div><p class="eyebrow">SUBJECT FOLDER</p><h1>{{ folder_name }}<em>.</em></h1><p class="welcome-copy">{{ documents|length }} PDF{% if documents|length != 1 %}s{% endif %} in this folder.</p></div><a class="btn btn-light" href="{{ url_for('resources_page') }}"><i class="bi bi-arrow-left"></i> All subjects</a></div>
+<section class="document-list reveal delay-1">
+    {% for document in documents %}
+    <article class="document-row"><span class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></span><div class="document-info"><h2>{{ document.title }}</h2><p>{{ document.original_filename }} <span>·</span> {{ '%.1f'|format(document.file_size / 1048576) }} MB</p></div><a class="btn btn-outline-dark btn-sm" href="{{ url_for('pdf_reader', slug=folder_slug, document_id=document.id) }}"><i class="bi bi-book"></i> Read here</a>{% if can_delete_documents %}<form method="post" action="{{ url_for('admin_delete_resource', document_id=document.id) }}" data-confirm="Delete {{ document.title }} and its file?"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-danger btn-sm" type="submit" aria-label="Delete {{ document.title }}"><i class="bi bi-trash3"></i> Delete</button></form>{% endif %}</article>
+    {% else %}<div class="empty-panel"><i class="bi bi-file-earmark-pdf"></i><h3>This folder is empty</h3><p>No PDFs were imported for this subject.</p></div>{% endfor %}
+</section>
+{% if links %}
+<section class="recommended-section reveal delay-2"><div class="section-head"><div><p class="eyebrow">CURATED FOR THIRD YEAR</p><h2>More to explore</h2></div></div><div class="recommended-list">
+    {% for link in links %}<article class="recommended-row"><span class="recommended-icon"><i class="bi bi-journal-bookmark"></i></span><div class="recommended-info"><div class="recommended-meta">{{ link.kind }}</div><h3>{{ link.title }}</h3><p>{{ link.description }}</p></div><a class="btn btn-outline-dark btn-sm" href="{{ link.url }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> Open source</a></article>{% endfor %}
+</div></section>
+{% endif %}
+{% endblock %}

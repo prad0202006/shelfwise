@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Credits{% endblock %}
+{% block breadcrumb %}CREDITS{% endblock %}
+{% block content %}
+<div class="page-heading reveal"><div><p class="eyebrow">LOCAL READING WALLET</p><h1>Your <em>credits.</em></h1><p class="welcome-copy">{% if access_role == 'main_admin' %}Assign student balances and claim catalog books without deductions.{% elif access_role == 'sub_admin' %}Claim catalog books without deductions and manage your assigned subjects.{% else %}Review your balance and the credits assigned to your account.{% endif %}</p></div></div>
+<section class="credit-layout reveal delay-1">
+    {% if is_admin %}<article class="wallet-panel admin-wallet"><p class="eyebrow">{{ 'MAIN ADMIN ACCESS' if access_role == 'main_admin' else 'SUB-ADMIN ACCESS' }}</p><div class="wallet-balance"><i class="bi bi-infinity"></i>Unlimited <span>credits</span></div><p class="form-hint">Admin book claims do not deduct from any student balance.</p>{% if access_role == 'main_admin' %}<a class="btn btn-credit" href="{{ url_for('admin_panel') }}"><i class="bi bi-people"></i> Manage student credits</a>{% else %}<a class="btn btn-credit" href="{{ url_for('resources_page') }}"><i class="bi bi-folder2-open"></i> Assigned subjects</a>{% endif %}</article>
+    {% else %}
+    <article class="wallet-panel"><p class="eyebrow">AVAILABLE BALANCE</p><div class="wallet-balance"><i class="bi bi-coin"></i>{{ balance }} <span>credits</span></div><p class="form-hint">Credits are assigned by your library administrator.</p></article>
+    {% endif %}
+    <section class="credit-history"><div class="section-head"><div><p class="eyebrow">WALLET ACTIVITY</p><h2>Recent transactions</h2></div></div>
+        {% if transactions %}<div class="transaction-list">{% for transaction in transactions %}<article class="transaction-row"><span class="transaction-icon {{ 'is-earned' if transaction.amount > 0 else 'is-spent' }}"><i class="bi {{ 'bi-arrow-down-left' if transaction.amount > 0 else 'bi-arrow-up-right' }}"></i></span><div class="transaction-info"><h3>{{ transaction.description }}</h3><p>{{ transaction.created_at.strftime('%b %d, %Y · %H:%M') }}</p></div><span class="transaction-amount {{ 'is-earned' if transaction.amount > 0 else 'is-spent' }}">{{ '+' if transaction.amount > 0 else '' }}{{ transaction.amount }}</span></article>{% endfor %}</div>
+        {% else %}<div class="empty-panel"><i class="bi bi-clock-history"></i><h3>No activity yet</h3><p>{{ 'Student assignments are tracked in each student wallet.' if access_role == 'main_admin' else ('Sub-admin claims do not deduct credits.' if access_role == 'sub_admin' else 'Your credit assignments and book claims will appear here.') }}</p></div>{% endif %}
+    </section>
+</section>
+{% endblock %}

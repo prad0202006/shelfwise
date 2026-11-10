@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Audit history{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin_panel') }}">ADMIN</a> <span>/</span> AUDIT HISTORY{% endblock %}
+{% block content %}
+<div class="page-heading reveal"><div><p class="eyebrow">MAIN ADMIN · AUDIT</p><h1>Action <em>history.</em></h1><p class="welcome-copy">Recent role, account, catalog, and resource changes.</p></div><a class="btn btn-light" href="{{ url_for('admin_panel') }}"><i class="bi bi-arrow-left"></i> Admin panel</a></div>
+<section class="audit-page-list reveal delay-1">
+    {% if audit_logs %}<div class="audit-list">{% for entry in audit_logs %}<article class="audit-row"><span class="audit-action">{{ entry.action|replace('_', ' ') }}</span><div class="audit-description"><strong>{{ entry.actor_registration_number }}</strong><span>{{ entry.target_type }}{% if entry.target_id %} #{{ entry.target_id }}{% endif %}{% if entry.details %} · {{ entry.details }}{% endif %}</span></div><time>{{ entry.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</time></article>{% endfor %}</div>
+    {% else %}<div class="empty-panel"><i class="bi bi-journal-text"></i><h3>No admin activity yet</h3><p>Administrative changes will be recorded here.</p></div>{% endif %}
+</section>
+{% endblock %}

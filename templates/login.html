@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block breadcrumb %}SIGN IN{% endblock %}
+{% block content %}
+<section class="auth-layout reveal">
+    <div class="auth-copy"><p class="eyebrow">SHELFWISE · LIBRARY DESK</p><h1>Your next<br><em>chapter starts here.</em></h1><p>Sign in with your college registration number to open your study shelf.</p></div>
+    <form class="auth-panel" method="post" autocomplete="on">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <p class="eyebrow">MEMBER ACCESS</p><h2>Sign in</h2>
+        <div class="mb-3"><label class="form-label" for="registration_number">Registration number</label><input class="form-control" id="registration_number" name="registration_number" type="text" autocomplete="username" autocapitalize="characters" required autofocus></div>
+        <div class="mb-4"><label class="form-label" for="password">Password</label><input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required></div>
+        <button class="btn btn-credit w-100" type="submit">Sign in <i class="bi bi-arrow-right"></i></button>
+        <p class="auth-note">New student? <a href="{{ url_for('signup') }}">Request an account</a></p>
+    </form>
+</section>
+{% endblock %}

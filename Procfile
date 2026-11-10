@@ -1,0 +1,1 @@
+web: SHELFWISE_ENV=production SHELFWISE_COOKIE_SECURE=1 gunicorn wsgi:app --workers 2 --threads 4 --bind 0.0.0.0:$PORT

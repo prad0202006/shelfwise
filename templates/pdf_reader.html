@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('resources_page') }}">STUDY PDFS</a> <span>/</span> <a href="{{ url_for('resource_folder', slug=request.view_args.slug) }}">{{ folder_name|upper }}</a> <span>/</span> READER{% endblock %}
+{% block content %}
+<div class="reader-heading"><div><p class="eyebrow">{{ folder_name|upper }}</p><h1>{{ title }}</h1></div><a class="btn btn-outline-dark btn-sm" href="{{ url_for('resource_folder', slug=request.view_args.slug) }}"><i class="bi bi-arrow-left"></i> Back to folder</a></div>
+<section class="pdf-reader" id="pdf-reader" data-pdf-url="{{ pdf_url }}">
+    <div class="reader-toolbar" role="toolbar" aria-label="PDF controls">
+        <div class="reader-page-controls"><button class="reader-control" type="button" data-action="previous" aria-label="Previous page" title="Previous page" disabled><i class="bi bi-chevron-left"></i></button><label class="reader-page-label"><input id="page-number" type="number" min="1" value="1" aria-label="Page number" disabled><span>/ <span id="page-count">--</span></span></label><button class="reader-control" type="button" data-action="next" aria-label="Next page" title="Next page" disabled><i class="bi bi-chevron-right"></i></button></div>
+        <div class="reader-zoom-controls"><button class="reader-control" type="button" data-action="zoom-out" aria-label="Zoom out" title="Zoom out"><i class="bi bi-dash-lg"></i></button><span id="zoom-level">100%</span><button class="reader-control" type="button" data-action="zoom-in" aria-label="Zoom in" title="Zoom in"><i class="bi bi-plus-lg"></i></button><a class="reader-control" href="{{ pdf_url }}" download aria-label="Download PDF" title="Download PDF"><i class="bi bi-download"></i></a></div>
+    </div>
+    <div class="reader-stage" id="reader-stage"><div class="reader-status" id="reader-status" role="status">Loading document…</div><canvas id="pdf-canvas" aria-label="PDF page" hidden></canvas></div>
+</section>
+{% endblock %}
+{% block page_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script defer src="{{ url_for('static', filename='pdf_reader.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Edit user{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin_panel') }}">ADMIN</a> <span>/</span> EDIT USER{% endblock %}
+{% block content %}
+<div class="page-heading reveal"><div><p class="eyebrow">ADMINISTRATION · {{ user.registration_number }}</p><h1>Edit <em>student details.</em></h1><p class="welcome-copy">Approval state: {{ user.approval_status }}.</p></div></div>
+<form class="admin-edit-form reveal delay-1" method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="signup-fields">
+        <div><label class="form-label" for="full_name">Full name</label><input class="form-control" id="full_name" name="full_name" value="{{ form_data.get('full_name', '') }}" maxlength="120" required></div>
+        <div><label class="form-label" for="registration_number">Registration number</label><input class="form-control" id="registration_number" name="registration_number" value="{{ user.registration_number }}" readonly></div>
+        <div><label class="form-label" for="email">Email</label><input class="form-control" id="email" name="email" type="email" value="{{ form_data.get('email', '') }}" maxlength="254" required></div>
+        <div><label class="form-label" for="course">Course</label><select class="form-select" id="course" name="course" required><option value="">Select course</option>{% for course in courses %}<option value="{{ course }}" {% if form_data.get('course') == course %}selected{% endif %}>{{ course }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="year_of_study">Current year</label><select class="form-select" id="year_of_study" name="year_of_study" required><option value="">Select year</option>{% for year in range(1, 7) %}<option value="{{ year }}" {% if form_data.get('year_of_study')|string == year|string %}selected{% endif %}>Year {{ year }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="specialization">Specialization</label><select class="form-select" id="specialization" name="specialization" data-course-options='{{ courses|tojson }}' data-current-specialization="{{ form_data.get('specialization', '') }}" required><option value="">Select course first</option></select></div>
+    </div>
+    <div class="signup-actions"><a class="text-link" href="{{ url_for('admin_panel') }}">Cancel</a><button class="btn btn-credit" type="submit"><i class="bi bi-check2"></i> Save details</button></div>
+</form>
+{% endblock %}
+{% block page_scripts %}<script defer src="{{ url_for('static', filename='signup.js') }}"></script>{% endblock %}

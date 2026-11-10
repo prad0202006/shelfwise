@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Study PDFs{% endblock %}
+{% block breadcrumb %}STUDY PDFS{% endblock %}
+{% block content %}
+<div class="page-heading reveal"><div><p class="eyebrow">COURSE MATERIALS</p><h1>Study <em>library.</em></h1><p class="welcome-copy">PDFs arranged in the same subject folders as your semester files.</p></div><span class="resource-total"><i class="bi bi-folder2-open"></i> {{ folders|length }} subjects</span></div>
+{% if current_user and current_user.role in ['main_admin', 'sub_admin'] and upload_folders %}
+<form class="admin-create pdf-upload-form reveal delay-1" method="post" action="{{ url_for('upload_document') }}" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="upload-heading"><div><p class="eyebrow">ADMIN · ADD MATERIAL</p><h2>Upload a PDF</h2></div><span class="upload-limit">Max 16 MB</span></div>
+    <div class="signup-fields">
+        <div><label class="form-label" for="folder_id">Subject folder</label><select class="form-select" id="folder_id" name="folder_id" required><option value="">Choose a subject</option>{% for folder in upload_folders %}<option value="{{ folder.id }}">{{ folder.name }}</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="pdf_file">PDF file</label><input class="form-control" id="pdf_file" name="file" type="file" accept=".pdf,application/pdf" required></div>
+        <div class="upload-title-field"><label class="form-label" for="pdf_title">Display title <span class="optional-label">Optional</span></label><input class="form-control" id="pdf_title" name="title" type="text" maxlength="250" placeholder="Defaults to the file name"></div>
+    </div>
+    <div class="upload-actions"><p>Only PDF files are accepted. Uploaded files are stored under their selected subject.</p><button class="btn btn-credit" type="submit"><i class="bi bi-cloud-arrow-up"></i> Upload PDF</button></div>
+</form>
+{% endif %}
+<section class="resource-grid reveal delay-1">
+    {% for folder in folders %}
+    <a class="resource-folder" href="{{ url_for('resource_folder', slug=folder.slug) }}">
+        <div class="folder-art"><span class="folder-index">{{ '%02d'|format(loop.index) }}</span><i class="bi bi-folder2-open"></i><span class="folder-spark"></span></div>
+        <div class="resource-folder-info"><div><h2>{{ folder.name }}</h2><p>{{ folder.documents|length }} PDF{% if folder.documents|length != 1 %}s{% endif %}</p></div><i class="bi bi-arrow-up-right folder-arrow"></i></div>
+    </a>
+    {% else %}
+    <div class="empty-panel"><i class="bi bi-folder2-open"></i><h3>No study folders yet</h3><p>Import PDFs into the library to see them here.</p></div>
+    {% endfor %}
+</section>
+{% endblock %}

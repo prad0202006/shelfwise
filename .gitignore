@@ -1,0 +1,8 @@
+*.pyc
+__pycache__/
+.venv/
+books.db
+.env
+documents/*.pdf
+documents/**/*.pdf
+!documents/.gitkeep

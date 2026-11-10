@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block breadcrumb %}OVERVIEW{% endblock %}
+{% block content %}
+<div class="welcome-row reveal">
+    <div><p class="eyebrow">YOUR THIRD-YEAR STUDY LIBRARY</p><h1>Make room<br>for <em>big ideas.</em></h1><p class="welcome-copy">Your books, notes, and course references in one place.</p></div>
+    <a class="btn btn-forest btn-lg" href="{{ url_for('new_book_page') }}"><i class="bi bi-plus-lg"></i> Add to collection</a>
+</div>
+<div class="stats-grid reveal delay-1">
+    <article class="stat-panel stat-green"><div class="stat-top"><span>BOOKS IN COLLECTION</span><i class="bi bi-journals"></i></div><div class="stat-number">{{ total_books }}</div><div class="stat-note">Titles on your shelves</div></article>
+    <article class="stat-panel stat-yellow"><div class="stat-top"><span>CREDIT BALANCE</span><i class="bi bi-coin"></i></div><div class="stat-number">{{ credit_balance }}</div><div class="stat-note"><a href="{{ url_for('credits_page') }}">{{ 'Manage credits' if current_user.role == 'main_admin' else 'View wallet activity' }}</a></div></article>
+    <article class="stat-panel stat-coral"><div class="stat-top"><span>AUTHORS</span><i class="bi bi-pen"></i></div><div class="stat-number">{{ author_count }}</div><div class="stat-note">Distinct voices collected</div></article>
+    <article class="stat-panel stat-green"><div class="stat-top"><span>STUDY PDFS</span><i class="bi bi-file-earmark-pdf"></i></div><div class="stat-number">{{ document_count }}</div><div class="stat-note">In your subject folders</div></article>
+</div>
+<section class="content-section reveal delay-2">
+    <div class="section-head"><div><p class="eyebrow">PUBLIC-DOMAIN PICKS</p><h2>Stories worth keeping</h2></div><span class="public-domain-note"><i class="bi bi-patch-check"></i> Verified Project Gutenberg editions</span></div>
+    <div class="featured-grid">{% for read in featured_reads %}<article class="featured-read"><div class="featured-cover cover-{{ loop.index }}"><span>OPEN<br>EDITION</span><i class="bi bi-book-half"></i></div><div class="featured-info"><span class="featured-kind">{{ read.format_label }} · US</span><h3>{{ read.title }}</h3><p class="featured-author">{{ read.author }}</p><p class="featured-description">{{ read.description }}</p><a class="text-link" href="{{ read.url }}" target="_blank" rel="noopener noreferrer">Open official edition <i class="bi bi-box-arrow-up-right"></i></a></div></article>{% endfor %}</div>
+</section>
+{% endblock %}
