@@ -9,7 +9,16 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship,
 from werkzeug.security import generate_password_hash
 
 DB_PATH = Path(__file__).resolve().parent / "books.db"
-engine = create_engine(f"sqlite:///{DB_PATH.as_posix()}")
+database_url = os.environ.get("DATABASE_URL", "").strip()
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+engine_options = {}
+if database_url.startswith("postgresql"):
+    engine_options.update(pool_pre_ping=True, pool_recycle=300)
+engine = create_engine(database_url or f"sqlite:///{DB_PATH.as_posix()}", **engine_options)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
@@ -202,7 +211,14 @@ def _as_dict(book):
 
 def init_db():
     Base.metadata.create_all(engine)
-    _migrate_user_profile_schema()
+    if engine.dialect.name == "sqlite":
+        _migrate_user_profile_schema()
+    elif engine.dialect.name == "postgresql":
+        with engine.begin() as connection:
+            connection.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ux_users_email "
+                "ON users(email) WHERE email IS NOT NULL"
+            ))
     admin_registration = os.environ.get("SHELFWISE_ADMIN_REG", "").strip().upper()
     admin_email = os.environ.get("SHELFWISE_ADMIN_EMAIL", "").strip()
     admin_password = os.environ.get("SHELFWISE_ADMIN_PASSWORD", "")
