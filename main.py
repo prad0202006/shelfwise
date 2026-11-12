@@ -16,6 +16,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import selectinload
 from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -24,6 +25,7 @@ from db import AuditLog, Book, FeaturedRead, SessionLocal, StudyDocument, Subjec
 load_dotenv()
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 runtime_environment = os.environ.get("SHELFWISE_ENV", "development").strip().lower()
 secret_key = os.environ.get("SHELFWISE_SECRET_KEY", "").strip()
 if not secret_key:
