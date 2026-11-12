@@ -62,16 +62,16 @@ MAIN_ADMIN_ENDPOINTS = {
 }
 
 
-def _csrf_token():
-    if "_csrf_token" not in session:
-        session["_csrf_token"] = secrets.token_urlsafe(32)
-    return session["_csrf_token"]
+def csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(32)
+    return session["csrf_token"]
 
 
 @app.before_request
 def require_session_and_csrf():
     if request.method == "POST":
-        expected = session.get("_csrf_token", "")
+        expected = session.get("csrf_token", "")
         supplied = request.form.get("_csrf_token", "") or request.headers.get("X-CSRF-Token", "")
         if not expected or not supplied or not hmac.compare_digest(expected, supplied):
             flash("Your session token expired. Refresh the page and try again.", "warning")
@@ -83,7 +83,7 @@ def require_session_and_csrf():
                 return redirect(target)
             return redirect(url_for("login"))
 
-    if request.endpoint in {"login", "signup", "static"}:
+    if request.endpoint in {"login", "signup", "static", "favicon"}:
         return None
 
     user_id = session.get("user_id")
@@ -107,10 +107,15 @@ def template_context():
     current_user = getattr(g, "current_user", None)
     return {
         "current_user": current_user,
-        "csrf_token": _csrf_token,
+        "csrf_token": csrf_token,
         "database_connected": check_database_connection(),
         "pending_signup_count": pending_user_count() if current_user and current_user["role"] in {"main_admin", "sub_admin"} else 0,
     }
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
 
 
 @app.errorhandler(RequestEntityTooLarge)
