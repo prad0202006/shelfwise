@@ -1,3 +1,4 @@
+import os
 import re
 import shutil
 from datetime import datetime
@@ -5,6 +6,7 @@ from pathlib import Path
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, create_engine, delete, func, inspect, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, selectinload, sessionmaker
+from werkzeug.security import generate_password_hash
 
 DB_PATH = Path(__file__).resolve().parent / "books.db"
 engine = create_engine(f"sqlite:///{DB_PATH.as_posix()}")
@@ -201,7 +203,31 @@ def _as_dict(book):
 def init_db():
     Base.metadata.create_all(engine)
     _migrate_user_profile_schema()
+    admin_registration = os.environ.get("SHELFWISE_ADMIN_REG", "").strip().upper()
+    admin_email = os.environ.get("SHELFWISE_ADMIN_EMAIL", "").strip()
+    admin_password = os.environ.get("SHELFWISE_ADMIN_PASSWORD", "")
     with SessionLocal.begin() as session:
+        has_main_admin = session.scalar(
+            select(User.id)
+            .where((User.access_role == "main_admin") | (User.role == "admin"))
+            .limit(1)
+        ) is not None
+        if not has_main_admin and admin_registration and admin_email and admin_password:
+            admin = User(
+                registration_number=admin_registration,
+                password_hash=generate_password_hash(admin_password),
+                full_name="Main Admin",
+                email=admin_email,
+                approval_status="approved",
+                role="admin",
+                access_role="main_admin",
+                is_active=True,
+                must_change_password=False,
+            )
+            session.add(admin)
+            session.flush()
+            session.add(UserCreditWallet(user_id=admin.id, balance=0))
+
         if session.scalar(select(Book.id).limit(1)) is None:
             session.add_all([
                 Book(title="Python Basics", author="Amit Sharma", price=350.00),

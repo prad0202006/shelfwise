@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
+from urllib.parse import urlparse
 
 import click
 from dotenv import load_dotenv
@@ -26,9 +27,7 @@ app = Flask(__name__)
 runtime_environment = os.environ.get("SHELFWISE_ENV", "development").strip().lower()
 secret_key = os.environ.get("SHELFWISE_SECRET_KEY", "").strip()
 if not secret_key:
-    if runtime_environment in {"production", "prod"}:
-        raise RuntimeError("SHELFWISE_SECRET_KEY is required in production.")
-    secret_key = "shelfwise-local-development-only-not-for-production"
+    raise RuntimeError("SHELFWISE_SECRET_KEY must be set in the environment.")
 app.config["SECRET_KEY"] = secret_key
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
@@ -37,23 +36,6 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 app.config["DOCUMENTS_DIR"] = Path(app.root_path) / "documents"
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 init_db()
-
-
-def _bootstrap_admin():
-    registration_number = os.environ.get("SHELFWISE_ADMIN_REGISTRATION_NUMBER", "").strip().upper()
-    password = os.environ.get("SHELFWISE_ADMIN_PASSWORD", "")
-    if not registration_number or not password:
-        return
-    if get_user_by_registration(registration_number) is None:
-        create_user(
-            registration_number,
-            generate_password_hash(password),
-            role="main_admin",
-            must_change_password=False,
-        )
-
-
-_bootstrap_admin()
 
 ADMIN_ENDPOINTS = {
     "admin_panel",
@@ -90,7 +72,14 @@ def require_session_and_csrf():
         expected = session.get("_csrf_token", "")
         supplied = request.form.get("_csrf_token", "") or request.headers.get("X-CSRF-Token", "")
         if not expected or not supplied or not hmac.compare_digest(expected, supplied):
-            abort(400, description="Invalid or missing request token.")
+            flash("Your session token expired. Refresh the page and try again.", "warning")
+            referrer = urlparse(request.referrer or "")
+            if not referrer.netloc or referrer.netloc == request.host:
+                target = referrer.path or url_for("login")
+                if referrer.query:
+                    target = f"{target}?{referrer.query}"
+                return redirect(target)
+            return redirect(url_for("login"))
 
     if request.endpoint in {"login", "signup", "static"}:
         return None
